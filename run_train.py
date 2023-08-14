@@ -332,9 +332,10 @@ def train():
                 batch_rays = torch.stack([rays_o, rays_d], 0)
                 target_s = target[select_coords[:, 0], select_coords[:, 1]]  # (N_rand, 3)  select image RGB data value
                 batch_shapeCodes = shapeCodes_target[None, :].expand(N_rand, -1)
-
+                batch_idCodes=idcode_target[None, :].expand(N_rand, -1)
         #####  Core optimization loop  #####
-        rgb, disp, acc, extras = render.render(H, W, K, chunk=args.chunk, rays=batch_rays, shapeCodes=batch_shapeCodes,
+        rgb, disp, acc, extras = render.render(H, W, K, chunk=args.chunk, rays=batch_rays,
+                                               shapeCodes=batch_idCodes,
                                                uvMap=target_uvmap,
                                                expType=target_expType,
                                                verbose=i < 10, retraw=True,
@@ -391,7 +392,7 @@ def train():
             with torch.no_grad():
                 render.render_path(torch.Tensor(poses[now_test]).to(device), [i // 2 for i in hwf], K // 2,
                                    args.chunk // 4, render_kwargs_test,
-                                   shapeCodes=torch.Tensor(shapeCodes[now_test]).to(device),
+                                   shapeCodes=now_test,
                                    uvMap=torch.stack(
                                        [readImgFromPath(uv_images["{}".format(idcodes[i])], half_res=False,
                                                         is_uvMap=True) for i in
