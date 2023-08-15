@@ -77,9 +77,11 @@ class myRenderer(torch.nn.Module):
         """Prepares inputs and applies network 'fn'.
         """
         inputs_flat = torch.reshape(inputs, [-1, inputs.shape[-1]])
-
-        shapeCodes = self.shapeCodes[0, :].expand([inputs_flat.shape[0], self.shapeCodes.shape[-1]])
-        exp_scale, exp_bias = self.idSpecificMod(self.shapeCodes[0, :].reshape(1, -1))
+        print(self.shapeCodes)
+        print(self.expType)
+        shapeCodes = self.shapeCodes_Sigma[self.shapeCodes].expand([inputs_flat.shape[0], self.shapeCodes_Sigma[-1].shape[-1]])
+        print(shapeCodes)
+        exp_scale, exp_bias = self.idSpecificMod(shapeCodes[0, :].reshape(1, -1))
         embedded = inputs_flat
         embedded = self.embed_fn(embedded)
 
@@ -89,7 +91,8 @@ class myRenderer(torch.nn.Module):
             in_ExpCodes_Sigma = in_ExpCodes_Sigma.expand([inputs_flat.shape[0], -1])
         embedded = torch.cat([embedded.cuda(), in_ExpCodes_Sigma.cuda()], -1)  # new! exp15!
         embedded = [embedded]
-        in_ShapeCodes_Sigma=self.shapeCodes_Sigma[self.shapeCodes]
+        print(self.shapeCodes)
+        in_ShapeCodes_Sigma=self.shapeCodes_Sigma[self.shapeCodes].expand([inputs_flat.shape[0], -1])
         embedded.append(in_ShapeCodes_Sigma.cuda())
 
         if viewdirs is not None:

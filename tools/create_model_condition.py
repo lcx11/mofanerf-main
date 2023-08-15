@@ -87,6 +87,11 @@ def create_nerf(args):
                         render.expCodes_Sigma, ckpt["expression_latent_codes_sigma"]
                 ):
                     latent.data[:] = saved_latent[:].detach().clone()
+            if render.shapeCodes_Sigma is not None:
+                for latent, saved_latent in zip(
+                        render.expCodes_Sigma, ckpt["shape_latent_codes_sigma"]
+                ):
+                    latent.data[:] = saved_latent[:].detach().clone()
         start = int(ckpt_path.split("/")[-1][:-4])
     # create Model Logger
     logger = Logger("{}/logNew.txt".format(os.path.join(basedir, expname)), bool(~args.no_reload), start)

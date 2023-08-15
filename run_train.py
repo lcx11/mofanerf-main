@@ -299,6 +299,7 @@ def train():
             target_uvmap = readImgFromPath(uv_images["{}".format(idcodes[img_i])], half_res=False, is_uvMap=True).to(
                 device)
             target_expType = expTypes[img_i]
+            target_idType=idcodes[img_i]
             target = images[img_i]
             target = readImgFromPath(target, half_res=args.half_res)
             target = torch.Tensor(target).to(device)
@@ -332,10 +333,10 @@ def train():
                 batch_rays = torch.stack([rays_o, rays_d], 0)
                 target_s = target[select_coords[:, 0], select_coords[:, 1]]  # (N_rand, 3)  select image RGB data value
                 batch_shapeCodes = shapeCodes_target[None, :].expand(N_rand, -1)
-                batch_idCodes=idcode_target[None, :].expand(N_rand, -1)
+                batch_idCodes=idcode_target[None, :]
         #####  Core optimization loop  #####
         rgb, disp, acc, extras = render.render(H, W, K, chunk=args.chunk, rays=batch_rays,
-                                               shapeCodes=batch_idCodes,
+                                               shapeCodes=target_idType,
                                                uvMap=target_uvmap,
                                                expType=target_expType,
                                                verbose=i < 10, retraw=True,
@@ -380,7 +381,8 @@ def train():
                 'network_render_textureEncoder': render.texEncoder.state_dict(),  # new save model parameters
                 'network_render_idSpecific': render.idSpecificMod.module.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
-                'expression_latent_codes_sigma': render.expCodes_Sigma
+                'expression_latent_codes_sigma': render.expCodes_Sigma,
+                'shape_latent_codes_sigma': render.shapeCodes_Sigma
             }, path)
             print('Saved checkpoints at', path)
 
